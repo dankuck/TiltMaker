@@ -237,6 +237,7 @@
     function BoardWalker(board) {
       this.active = [];
       this.seen = [];
+      this.done = false;
 
       // Unique solutions. Solutions that do not "get there" the same way as 
       // any other solution.
@@ -258,6 +259,7 @@
     BoardWalker.prototype = {
       step: function () {
         if (this.active.length == 0) {
+          this.done = true;
           return;
         }
         var board = this.active.shift();

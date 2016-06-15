@@ -40,7 +40,11 @@
     }
     var walker = new BoardWalker(board);
     function show () {
-      var str = "== UNIQUE SOLUTIONS (" + walker.solutions.length + ")\n\n";
+      var str = "";
+      if (walker.active.length == 0) {
+        str += "DONE\n\n";
+      }
+      str += "== UNIQUE SOLUTIONS (" + walker.solutions.length + ")\n\n";
       for (var i = 0; i < walker.solutions.length; i++) {
         str += walker.solutions[i].toPathString() + "\n\n";
       }
@@ -52,6 +56,8 @@
       for (var i = 0; i < walker.failures.length; i++) {
         str += walker.failures[i].toPathString() + "\n\n";
       }
+      // Boring stuff...
+      /*
       str += "== CIRCLES (" + walker.circles.length + ")\n\n";
       for (var i = 0; i < walker.circles.length; i++) {
         str += walker.circles[i].toPathString() + "\n\n";
@@ -60,9 +66,8 @@
       for (var i = 0; i < walker.shortCircuited.length; i++) {
         str += walker.shortCircuited[i].toPathString() + "\n\n";
       }
-      if (walker.active.length == 0) {
-        str += "DONE\n\n";
-      }
+      */
+      
       document.getElementById("board").innerHTML = str;
     }
 
@@ -73,6 +78,14 @@
     }
 
     document.getElementById('step').onclick = doStep;
+    document.getElementById('run').onclick = function () {
+      var running = setInterval(function () {
+        if (walker.done) {
+          clearInterval(running);
+        }
+        doStep();
+      }, 100);
+    };
     
     </script>
 </body>
