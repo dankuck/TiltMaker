@@ -64,6 +64,22 @@
         failures += walker.failures[i].toPathString() + "\n\n";
       }
       $('.js-failures').html(failures || "None");
+      
+
+      $('.js-circle-count').html(walker.circles.length);
+      var circles = "";
+      for (var i = 0; i < walker.circles.length; i++) {
+        circles += walker.circles[i].toPathString() + "\n\n";
+      }
+      $('.js-circles').html(circles || "None");
+      
+
+      $('.js-short-count').html(walker.shortCircuited.length);
+      var shorts = "";
+      for (var i = 0; i < walker.shortCircuited.length; i++) {
+        shorts += walker.shortCircuited[i].toPathString() + "\n\n";
+      }
+      $('.js-shorts').html(shorts || "None");
     }
 
     function doStep() {

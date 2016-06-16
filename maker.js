@@ -216,9 +216,9 @@
         } while (hasConflict(pieces, piece));
         pieces.push(piece);
       }
-      var green_count = randomInt(1, 2);
-      var blue_count = randomInt(0, 4);
-      var grey_count = randomInt(1, 6);
+      var green_count = randomInt(1, 3);
+      var blue_count = randomInt(0, 5);
+      var grey_count = randomInt(1, 7);
       var pieces = [];
       pieces.push(new Piece(HOLE, 2, 2));
       for (var i = 0; i < green_count; i++) {
