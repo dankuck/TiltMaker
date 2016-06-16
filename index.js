@@ -89,20 +89,29 @@
 
     $('.js-step').on('click', doStep);
 
+    function run() {
+      if (walker.done) {
+        stop();
+        return;
+      }
+      $('.js-run').html("Stop");
+      doStep();
+    }
+
+    function stop() {
+      $('.js-run').html("Run");
+      clearInterval(running);
+      running = null;
+    }
+
     var running = null;
     $('.js-run').on('click', function () {
       if (running) {
-        clearInterval(running);
-        running = null;
+        stop();
         return;
       }
       running = setInterval(function () {
-        if (walker.done) {
-          clearInterval(running);
-          running = null;
-          return;
-        }
-        doStep();
+        run();
       }, 100);
     });
 

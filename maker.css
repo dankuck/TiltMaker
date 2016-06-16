@@ -14,3 +14,7 @@
     .controls {
       padding: 1em;
     }
+    pre {
+      overflow: scroll;
+      max-height: 80%;
+    }
