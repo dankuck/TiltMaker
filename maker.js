@@ -3,7 +3,7 @@
     var GREEN = 'G';
     var BLUE = 'B';
 
-    Math.randomInt = function(lower_inc, upper_exc) {
+    function randomInt(lower_inc, upper_exc) {
         return Math.floor(Math.random() * (upper_exc - lower_inc) + lower_inc);
     };
 
@@ -32,7 +32,7 @@
       },
       arrayToString: function (array) {
         for (var i = 0; i < array.length; i++) {
-            array[i] = array[i].join("");
+            array[i] = array[i].join(" ");
         }
         return array.join("\n");
       },
@@ -107,7 +107,7 @@
       getShiftedBoard: function (direction) {
         var pieces = this.getSortedPiecesCopy(direction);
         for (var i = 0; i < pieces.length; i++) {
-          pieces[i] = getShiftedPiece(pieces, pieces[i], direction);
+          pieces[i] = pieces[i].getShiftedPiece(pieces, direction);
         }
         return new Board(pieces, direction, this);
       },
@@ -153,52 +153,51 @@
     Piece.prototype = {
       clone: function () {
         return new Piece(this.symbol, this.x, this.y, this.inTheHole);
+      },
+      getShiftedPiece: function (pieces, direction) {
+        if (this.symbol == BLOCK || this.symbol == HOLE || this.inTheHole) {
+          return this.clone();
+        }
+        var x = this.x,
+          y = this.y;
+        var spaces = [];
+        if (direction == "up") {
+          for (var i = y - 1; i >= 0; i--) {
+            spaces.push({x: x, y: i});
+          }
+        } else if (direction == "down") {
+          for (var i = y + 1; i < 5; i++) {
+            spaces.push({x: x, y: i});
+          }
+        } else if (direction == "left") {
+          for (var i = x - 1; i >= 0; i--) {
+            spaces.push({x: i, y: y});
+          }
+        } else if (direction == "right") {
+          for (var i = x + 1; i < 5; i++) {
+            spaces.push({x: i, y: y});
+          }
+        } else {
+          throw new Error("Unknown direction: " + direction);
+        }
+        var inTheHole = false;
+        for (var i = 0; i < spaces.length; i++) {
+          var conflictPiece = hasConflict(pieces, spaces[i]);
+          if (conflictPiece.symbol == HOLE) {
+            x = spaces[i].x;
+            y = spaces[i].y;
+            inTheHole = true;
+            break;
+          } else if (!conflictPiece) {
+            x = spaces[i].x;
+            y = spaces[i].y;
+          } else {
+            break;
+          }
+        }
+        return new Piece(this.symbol, x, y, inTheHole);
       }
     };
-
-    function getShiftedPiece(pieces, piece, direction) {
-      if (piece.symbol == BLOCK || piece.symbol == HOLE || piece.inTheHole) {
-        return piece.clone();
-      }
-      var x = piece.x,
-        y = piece.y;
-      var spaces = [];
-      if (direction == "up") {
-        for (var i = y - 1; i >= 0; i--) {
-          spaces.push({x: x, y: i});
-        }
-      } else if (direction == "down") {
-        for (var i = y + 1; i < 5; i++) {
-          spaces.push({x: x, y: i});
-        }
-      } else if (direction == "left") {
-        for (var i = x - 1; i >= 0; i--) {
-          spaces.push({x: i, y: y});
-        }
-      } else if (direction == "right") {
-        for (var i = x + 1; i < 5; i++) {
-          spaces.push({x: i, y: y});
-        }
-      } else {
-        throw new Error("Unknown direction: " + direction);
-      }
-      var inTheHole = false;
-      for (var i = 0; i < spaces.length; i++) {
-        var conflictPiece = hasConflict(pieces, spaces[i]);
-        if (conflictPiece.symbol == HOLE) {
-          x = spaces[i].x;
-          y = spaces[i].y;
-          inTheHole = true;
-          break;
-        } else if (!conflictPiece) {
-          x = spaces[i].x;
-          y = spaces[i].y;
-        } else {
-          break;
-        }
-      }
-      return new Piece(piece.symbol, x, y, inTheHole);
-    }
 
     function hasConflict(pieces, coord) {
       for (var i = 0; i < pieces.length; i++) {
@@ -213,13 +212,13 @@
       function make(symbol) {
         var piece;
         do {
-          piece = new Piece(symbol, Math.randomInt(0, 5), Math.randomInt(0, 5));
+          piece = new Piece(symbol, randomInt(0, 5), randomInt(0, 5));
         } while (hasConflict(pieces, piece));
         pieces.push(piece);
       }
-      var green_count = Math.randomInt(1, 2);
-      var blue_count = Math.randomInt(0, 4);
-      var grey_count = Math.randomInt(1, 6);
+      var green_count = randomInt(1, 2);
+      var blue_count = randomInt(0, 4);
+      var grey_count = randomInt(1, 6);
       var pieces = [];
       pieces.push(new Piece(HOLE, 2, 2));
       for (var i = 0; i < green_count; i++) {

@@ -1,0 +1,16 @@
+
+    p {
+      width: 500px;
+    }
+    .board {
+      font-size: 150%;
+    }
+    .invisible {
+      display: none;
+    }
+    body {
+      padding: 1em;
+    }
+    .controls {
+      padding: 1em;
+    }
