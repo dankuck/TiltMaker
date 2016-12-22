@@ -1,9 +1,6 @@
 
 
 const app = new Vue({
-    el: '#app',
-    data: {
-        bus: bus
-    }
+    el: '#tilt-maker'
 });
 
