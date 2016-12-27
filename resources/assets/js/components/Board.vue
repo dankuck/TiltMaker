@@ -1,7 +1,5 @@
 <template>
-	<div>
-		<pre>{{ board.toString() }}</pre>
-	</div>
+	<div><pre>{{ board.toString() }}</pre></div>
 </template>
 
 <script>

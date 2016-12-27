@@ -2,7 +2,6 @@
 <pre>
 <template v-for="path in paths">
 {{ path.toPathString() }}
-
 </template>
 </pre>
 </template>
