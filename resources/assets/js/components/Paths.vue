@@ -4,13 +4,13 @@
 {{ path.toPathString() }}
 </template>
 <div v-if="paths.length === 0">
-No paths.
+{{ noneMessage || 'No paths.' }}
 </div>
 </pre>
 </template>
 
 <script>
 export default {
-	props: ['paths'],
+	props: ['paths', 'noneMessage'],
 }
 </script>

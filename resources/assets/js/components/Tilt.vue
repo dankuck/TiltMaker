@@ -15,61 +15,63 @@
           </template>
         </div>
 
-        <div class="tabs">
-            <div v-for="tab in tabs" class="tab" :class="tabClass(tab)" @click="showTab(tab)">{{ tab }} <span class="badge">{{ tabCount(tab) }}</span></div>
-        </div>
+        <template v-if="!justStarted">
+            <div class="tabs">
+                <div v-for="tab in tabs" class="tab" :class="tabClass(tab)" @click="showTab(tab)">{{ tab }} <span class="badge">{{ tabCount(tab) }}</span></div>
+            </div>
 
-        <div v-if="currentTab === 'Solutions'">
-            <p>
-            These solutions are found by attempting every valid move. If there is more than one solution, each one has a different last move. The first solution is the shortest.
-            </p>
+            <div v-if="currentTab === 'Solutions'">
+                <p>
+                These solutions are found by attempting every valid move. If there is more than one solution, each one has a different last move. The first solution is the shortest.
+                </p>
 
-            <paths :paths="walker.solutions"></paths>
-        </div>
+                <paths :paths="walker.solutions" :none-message="solutionsNoneMessage"></paths>
+            </div>
 
-        <div v-if="currentTab === 'Active'">
-            <p>
-              These paths are currently in play. Every time two separate
-              moves can be made, the path is split into two rows and both
-              moves are played.
-            </p>
+            <div v-if="currentTab === 'Active'">
+                <p>
+                  These paths are currently in play. Every time two separate
+                  moves can be made, the path is split into two rows and both
+                  moves are played.
+                </p>
 
-            <paths :paths="walker.active"></paths>
-        </div>
+                <paths :paths="walker.active" none-message="All done!"></paths>
+            </div>
 
-        <div v-if="currentTab === 'Failures'">
-            <p>
-              These paths have failed because a blue token went in
-              the goal.
-            </p>
+            <div v-if="currentTab === 'Failures'">
+                <p>
+                  These paths have failed because a blue token went in
+                  the goal.
+                </p>
 
-            <paths :paths="walker.failures"></paths>
-        </div>
+                <paths :paths="walker.failures"></paths>
+            </div>
 
-        <div v-if="currentTab === 'Circles'">
-            <p>
-              These paths started repeating. Often because a move resulted
-              in no changes. E.g., tilting right when everything that could
-              move was already on the right. That makes them boring, usually.
-            </p>
+            <div v-if="currentTab === 'Circles'">
+                <p>
+                  These paths started repeating. Often because a move resulted
+                  in no changes. E.g., tilting right when everything that could
+                  move was already on the right. That makes them boring, usually.
+                </p>
 
-            <p>
-              They can be interesting when they represent a trap. I haven't
-              yet determined how to detect a trap for display, so they end
-              up here.
-            </p>
+                <p>
+                  They can be interesting when they represent a trap. I haven't
+                  yet determined how to detect a trap for display, so they end
+                  up here.
+                </p>
 
-            <paths :paths="walker.circles"></paths>
-        </div>
+                <paths :paths="walker.circles"></paths>
+            </div>
 
-        <div v-if="currentTab === 'Long Ways'">
-            <p>
-              These paths took the long way to get to the same place that
-              other paths reached faster. It would waste our time to continue
-              them.
-            </p>
+            <div v-if="currentTab === 'Long Ways'">
+                <p>
+                  These paths took the long way to get to the same place that
+                  other paths reached faster. It would waste our time to continue
+                  them.
+                </p>
 
-            <paths :paths="walker.shortCircuited"></paths>
+                <paths :paths="walker.shortCircuited"></paths>
+            </div>
         </div>
     </div>
 </template>
@@ -81,6 +83,7 @@ export default {
     data() {
         var board = Maker.generateRandomBoard();
         return {
+            justStarted: true,
             startBoard: board,
             walker: new BoardWalker(board),
             running: null,
@@ -101,6 +104,15 @@ export default {
         tabs() {
         	return Object.keys(this.tabMap);
         },
+        solutionsNoneMessage() {
+            if (this.done) {
+                return 'No solutions exist.';
+            }
+            if (!this.running) {
+                return 'Click Run to solve this board.';
+            }
+            return 'Searching for solutions...';
+        }
     },
     methods: {
         reset() {
@@ -111,6 +123,7 @@ export default {
             this.walker = new BoardWalker(this.startBoard);
         },
         step() {
+            this.justStarted = false;
             this.walker.step();
         },
         run() {
