@@ -22,7 +22,7 @@
 
             <div v-if="currentTab === 'Solutions'">
                 <p>
-                These solutions are found by attempting every valid move. If there is more than one solution, each one has a different last move. The first solution is the shortest.
+                These solutions are found by attempting every valid move. The first solution is the shortest.
                 </p>
 
                 <paths :paths="walker.solutions" :none-message="solutionsNoneMessage"></paths>
