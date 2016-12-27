@@ -37,7 +37,7 @@ Piece.prototype = {
     }
     var inTheHole = false;
     for (var i = 0; i < spaces.length; i++) {
-      var conflictPiece = hasConflict(pieces, spaces[i]);
+      var conflictPiece = Piece.hasConflict(pieces, spaces[i]);
       if (conflictPiece.symbol == Piece.HOLE) {
         x = spaces[i].x;
         y = spaces[i].y;
