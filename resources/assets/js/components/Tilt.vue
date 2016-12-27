@@ -168,6 +168,8 @@ export default {
 .tilt-maker pre {
   overflow: scroll;
   max-height: 80%;
+  padding: 1em;
+  border: 1px solid #CCC;
 }
 
 .tilt-maker .tabs {
@@ -190,4 +192,12 @@ export default {
         background-color: #888;
         color: #EEE;
     }
+
+.tilt-maker .badge {
+    background-color: #777;
+    border-radius: 50%;
+    padding: 0 .25em;
+    color: white;
+    font-size: 12px;
+}
 </style>
