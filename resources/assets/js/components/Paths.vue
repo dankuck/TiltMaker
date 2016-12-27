@@ -1,9 +1,9 @@
 <template>
 <div>
-<pre><template v-for="path in paths">
+<pre v-if="paths.length > 0"><template v-for="path in paths">
 {{ path.toPathString() }}
 </template></pre>
-<pre v-if="paths.length === 0">
+<pre v-else>
 {{ noneMessage || 'No paths.' }}
 </pre>
 </div>
