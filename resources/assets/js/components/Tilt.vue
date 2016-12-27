@@ -148,10 +148,6 @@ export default {
   font-size: 150%;
 }
 
-.tilt-maker .invisible {
-  display: none;
-}
-
 .tilt-maker .controls {
   padding: 1em;
 }
