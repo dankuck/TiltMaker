@@ -1,11 +1,13 @@
 <template>
 <div>
-<pre><template v-for="path in paths">
-{{ path.toPathString() }}
-</template></pre>
-<pre v-if="paths.length === 0">
-{{ noneMessage || 'No paths.' }}
-</pre>
+	<div v-if="paths.length > 0">
+		<div v-for="path in paths">
+			<board-path :path="path"></board-path>
+		</div>
+	</div>
+	<div v-else>
+		{{ noneMessage || 'No paths.' }}
+	</div>
 </div>
 </template>
 
