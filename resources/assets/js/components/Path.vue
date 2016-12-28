@@ -15,10 +15,10 @@ export default {
 	data() {
 		return {
 			directionMap: {
-				'left': '⇐',
-				'right': '⇒', 
-				'up': '⇑', 
-				'down': '⇓',
+				'left': '◀',
+				'right': '▶', 
+				'up': '▲', 
+				'down': '▼',
 			},
 		};
 	},
