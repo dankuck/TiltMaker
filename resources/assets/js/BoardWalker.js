@@ -1,70 +1,123 @@
+/**
+ * ----------------------
+ * BoardWalker
+ * ----------------------
+ * A BoardWalker holds all the Board states and categorizes them as one of
+ * Active, Solutions, Failures, Circles, or Short-Circuited.
+ *
+ * The step() method moves one step forward on a single Board, branching as
+ * needed.
+ *
+ * Call the step() method repeatedly until the `done` property is true.
+ */
+class BoardWalker {
 
-function BoardWalker(board) {
-  this.active = [];
-  this.seen = [];
-  this.done = false;
+    construct(board) {
+        this.active = [];
+        this.seen = {};
+        this.done = false;
 
-  // Unique solutions. Solutions that do not "get there" the same way as 
-  // any other solution.
-  this.solutions = [];
+        // Unique solutions. Green pieces went in the hole.
+        this.solutions = [];
 
-  // Failures. The blue piece went in the hole.
-  this.failures = [];
+        // Failures. The blue piece went in the hole.
+        this.failures = [];
 
-  // Paths that doubled back on themselves.
-  this.circles = [];
+        // These paths doubled back on themselves.
+        this.circles = [];
 
-  // Paths that ended up in the same place as some other shorter path.
-  // (Not including a winning step, those are unique solutions. And not 
-  // including circles.)
-  this.shortCircuited = [];
+        // Paths that joined up with some other shorter path.
+        // (Not including a winning step, failure step, or circles.)
+        this.shortCircuited = [];
 
-  this.processNewStep(board);
-}
-BoardWalker.prototype = {
-  step: function () {
-    if (this.active.length == 0) {
-      this.done = true;
-      return;
+        this.categorizeBoard(board);
     }
-    var board = this.active.shift();
-    this.seen.push(board);
-    var directions;
-    if (!board.lastDirection) {
-      directions = ['up', 'down', 'left', 'right'];
-    } else if (board.lastDirection == 'up' || board.lastDirection == 'down') {
-      directions = ['left', 'right'];
-    } else if (board.lastDirection == 'right' || board.lastDirection == 'left') {
-      directions = ['up', 'down'];
-    } else {
-      throw new Error("Unknown direction: " + board.lastDirection);
+
+    /**
+     * This takes one of the active boards and shifts it in whichever
+     * directions make sense for it. Then it evaluates each resulting board and
+     * categorizes it, maybe putting it on the end of the active queue.
+     *
+     * @return void
+     */
+    step() {
+        if (this.active.length == 0) {
+            this.done = true;
+            return;
+        }
+        const board = this.active.shift();
+        this.seen[board.asString] = board;
+        this.getDirections(board)
+            .each(direction => {
+                const step = board.getShiftedBoard(directions[i]);
+                this.categorizeBoard(step);
+            });
     }
-    for (var i = 0; i < directions.length; i++) {
-      var step = board.getShiftedBoard(directions[i]);
-      this.processNewStep(step);
+
+    /**
+     * Find the sensible directions for the given Board. At the outset, every
+     * direction makes sense, but after that, only two directions make any
+     * sense.
+     *
+     * @param  Board board
+     * @return Array
+     */
+    getDirections(board) {
+        if (! board.lastDirection) {
+            // If you have no lastDirection, then this is the starting point
+            // and every direction makes sense.
+            return ['up', 'down', 'left', 'right'];
+        } else if (
+            board.lastDirection == 'up'
+            || board.lastDirection == 'down'
+        ) {
+            // If you've just gone up, it stands to reason that in another
+            // branch you went down. So we don't need to try down again.
+            return ['left', 'right'];
+        } else if (
+            board.lastDirection == 'right'
+            || board.lastDirection == 'left'
+        ) {
+            // Same as above, if you've just gone left, it stands to reason
+            // that in another branch you went right. So we don't need to try
+            // right again.
+            return ['up', 'down'];
+        } else {
+            throw new Error(`Unknown direction: ${board.lastDirection}`);
+        }
     }
-  },
-  processNewStep: function (step) {
-    if (step.isComplete()) {
-      this.solutions.push(step); // yay!
-    } else if (step.isFail()) {
-      this.failures.push(step); // this fails
-    } else if (step.isRedundant()) {
-      this.circles.push(step); // we're just going in circles
-    } else if (this.seenThisBefore(step)) {
-      this.shortCircuited.push(step); // this is redundant with another, shorter path
-    } else {
-      this.active.push(step); // press on soldier
+
+    /**
+     * This adds the board to one of the categories, maybe the active queue.
+     *
+     * @param  Board board
+     * @return void
+     */
+    categorizeBoard(board) {
+        if (board.isComplete) {
+            this.solutions.push(board); // yay!
+        } else if (board.isFail) {
+            this.failures.push(board); // this fails
+        } else if (board.isRedundant()) {
+            this.circles.push(board); // we're just going in circles
+        } else if (this.seenThisBefore(board)) {
+            this.shortCircuited.push(board); // this is redundant with another, shorter path
+        } else {
+            this.active.push(board); // press on soldier
+        }
     }
-  },
-  seenThisBefore: function (board) {
-    for (var i = 0; i < this.seen.length; i++) {
-      if (this.seen[i].equals(board)) {
-        return true;
-      }
+
+    /**
+     * This tells us if we've already seen the board state before. If we have,
+     * we know that it's pointless to pursue this path, especially since the
+     * path we saw before was shorter.
+     *
+     * @param  Board board
+     * @return Boolean
+     */
+    seenThisBefore(board) {
+        return Boolean(this.seen[board.asString]);
     }
-    return false;
-  }
 };
 
 module.exports = BoardWalker;

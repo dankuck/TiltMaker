@@ -49,6 +49,15 @@ class Board {
         this.lastDirection = lastDirection;
         this.lastBoard = lastBoard;
         this.asString = this.toString();
+
+        this.isFail = this.pieces
+            .some(({symbol, inTheHole}) => symbol == Piece.BLUE && inTheHole);
+
+        this.isComplete = ! this.isFail
+            && ! this.pieces
+                .some(
+                    ({symbol, inTheHole}) => symbol == Piece.GREEN && !inTheHole
+                );
     }
 
     /**
@@ -115,8 +124,8 @@ class Board {
      * @return Array
      */
     getSortedPiecesCopy(direction) {
-        const sort = ({up, down, left, right})[direction];
-        if (!sort) {
+        const sort = sorts[direction];
+        if (! sort) {
             throw new Error(`Unknown direction: ${direction}`);
         }
         return this.getPiecesCopy().sort(sort);
@@ -141,28 +150,6 @@ class Board {
             (piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction)
         );
         return new Board(pieces, direction, this);
-    }
-
-    /**
-     * Is the Board in a win position? All greens are in the hole? None of the
-     * blues are?
-     * @return Boolean
-     */
-    isComplete() {
-        if (this.isFail()) {
-            return false;
-        }
-        return ! this.pieces
-            .some(({symbol, inTheHole}) => symbol == Piece.GREEN && !inTheHole)
-    }
-
-    /**
-     * Is the Board in a fail position? One of the blues is in the hole?
-     * @return Boolean
-     */
-    isFail() {
-        return this.pieces
-            .some(({symbol, inTheHole}) => symbol == Piece.BLUE && inTheHole);
     }
 
     /**
