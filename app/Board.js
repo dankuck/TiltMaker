@@ -44,7 +44,8 @@ const empty = [
  * instance in a [hopefully] different state.
  */
 class Board {
-    construct(pieces, lastDirection, lastBoard) {
+
+    constructor(pieces, lastDirection, lastBoard) {
         this.pieces = pieces;
         this.lastDirection = lastDirection;
         this.lastBoard = lastBoard;
@@ -82,7 +83,7 @@ class Board {
      */
     toGrid() {
         const array = [...empty];
-        this.pieces.each(
+        this.pieces.forEach(
             ({x, y, symbol}) => array[y][x] = symbol
         );
         return array;
@@ -146,7 +147,7 @@ class Board {
         // That's why we started with the *sorted* pieces array. That ensures
         // that the first Piece that could shift is the first Piece that does
         // shift.
-        pieces.each(
+        pieces.forEach(
             (piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction)
         );
         return new Board(pieces, direction, this);
@@ -212,4 +213,4 @@ class Board {
     }
 }
 
-module.exports = Board;
+export default Board;

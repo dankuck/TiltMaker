@@ -50,20 +50,4 @@ export default {
 </script>
 
 <style>
-.board {
-	position: relative;
-	width: 5em;
-	height: 5em;
-	border: 1px solid #CCC;
-	border-radius: .5em;
-}
-
-	.board .piece {
-		position: absolute;
-	}
-
-	.board .place {
-		position: absolute;
-		color: #DDD;
-	}
 </style>

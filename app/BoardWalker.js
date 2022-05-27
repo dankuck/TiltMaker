@@ -12,7 +12,7 @@
  */
 class BoardWalker {
 
-    construct(board) {
+    constructor(board) {
         this.active = [];
         this.seen = {};
         this.done = false;
@@ -48,8 +48,8 @@ class BoardWalker {
         const board = this.active.shift();
         this.seen[board.asString] = board;
         this.getDirections(board)
-            .each(direction => {
-                const step = board.getShiftedBoard(directions[i]);
+            .forEach(direction => {
+                const step = board.getShiftedBoard(direction);
                 this.categorizeBoard(step);
             });
     }
@@ -120,4 +120,4 @@ class BoardWalker {
     }
 };
 
-module.exports = BoardWalker;
+export default BoardWalker;

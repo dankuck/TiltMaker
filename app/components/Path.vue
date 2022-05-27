@@ -40,13 +40,4 @@ export default {
 </script>
 
 <style>
-.path-part {
-	display: table-cell;
-}
-
-	.path-part .direction {
-		width: 1.25em;
-		font-size: 300%;
-		text-align: center;
-	}
 </style>

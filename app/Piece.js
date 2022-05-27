@@ -21,7 +21,7 @@
  */
 class Piece {
 
-    construct(symbol, x, y, inTheHole) {
+    constructor(symbol, x, y, inTheHole) {
         this.symbol = symbol;
         this.x = x;
         this.y = y;
@@ -60,7 +60,7 @@ class Piece {
         // Iterate over all the spaces we found, checking to see if it
         // has anything in it, and if so, is it The Hole?
 
-        const {x, y, hole} = this.findSpace(spaces);
+        const {x, y, hole} = this.findSpace(pieces, spaces);
 
         return new Piece(this.symbol, x, y, hole);
     }
@@ -105,19 +105,20 @@ class Piece {
      * @param  Array spaces     As from getSpaces()
      * @return Object           {x, y, hole}
      */
-    findSpace(spaces) {
+    findSpace(pieces, spaces) {
         let {x, y} = this;
         for (let i = 0; i < spaces.length; i++) {
           const conflict = Piece.hasConflict(pieces, spaces[i]);
-          if (conflict.symbol == Piece.HOLE) {
+          if (! conflict) {
+            x = spaces[i].x;
+            y = spaces[i].y;
+          } else if (conflict.symbol == Piece.HOLE) {
             return {
                 x: spaces[i].x,
                 y: spaces[i].y,
                 hole: true,
             }
-          } else if (!conflict) {
-            {x, y} = spaces[i];
-          } else {
+          } else { // We encountered a conflict that is not The Hole
             break;
           }
         }
@@ -143,4 +144,4 @@ Piece.HOLE = 'O';
 Piece.GREEN = 'G';
 Piece.BLUE = 'B';
 
-module.exports = Piece;
+export default Piece;

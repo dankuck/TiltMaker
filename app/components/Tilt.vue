@@ -72,7 +72,7 @@
 
                 <paths :paths="walker.shortCircuited"></paths>
             </div>
-        </div>
+        </template>
     </div>
 </template>
 
@@ -81,7 +81,9 @@ import Maker from '../Maker.js';
 import BoardWalker from '../BoardWalker.js';
 export default {
     data() {
+        console.log('generating board');
         var board = Maker.generateRandomBoard();
+        console.log('generated board');
         return {
             justStarted: true,
             startBoard: board,
@@ -152,52 +154,4 @@ export default {
 </script>
 
 <style>
-
-.tilt-maker p {
-  width: 500px;
-}
-
-.tilt-maker .board {
-  font-size: 150%;
-}
-
-.tilt-maker .controls {
-  padding: 1em;
-}
-
-.tilt-maker pre {
-  overflow: scroll;
-  max-height: 80%;
-  padding: 1em;
-  border: 1px solid #CCC;
-}
-
-.tilt-maker .tabs {
-    background-color: #CCC;
-    color: black;
-    margin-bottom: 1em;
-}
-
-.tilt-maker .tab {
-    display: table-cell;
-    padding: 1em;
-    cursor: pointer;
-}
-    .tilt-maker .tab:hover {
-        background-color: #AAA;
-        color: #EEE;
-    }
-
-    .tilt-maker .tab.active {
-        background-color: #888;
-        color: #EEE;
-    }
-
-.tilt-maker .badge {
-    background-color: #777;
-    border-radius: 50%;
-    padding: 0 .25em;
-    color: white;
-    font-size: 12px;
-}
 </style>
