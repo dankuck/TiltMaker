@@ -531,9 +531,7 @@ function randomInt(lower_inc, upper_exc) {
 function generateRandomBoard() {
   function make(symbol) {
     for (let attempt = 0; attempt < 5 * 5; attempt++) {
-      console.log('Attempt', attempt);
       const piece = new _Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"](symbol, randomInt(0, 5), randomInt(0, 5));
-      console.log('Checking generated piece...', JSON.stringify(piece));
 
       if (!_Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"].hasConflict(pieces, piece)) {
         pieces.push(piece);
@@ -548,25 +546,20 @@ function generateRandomBoard() {
   var blue_count = randomInt(0, 5);
   var grey_count = randomInt(1, 7);
   var pieces = [];
-  console.log('Creating The Hole');
   pieces.push(new _Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"](_Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"].HOLE, 2, 2));
 
   for (var i = 0; i < green_count; i++) {
-    console.log('Creating a Green');
     make(_Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"].GREEN);
   }
 
   for (var i = 0; i < blue_count; i++) {
-    console.log('Creating a Blue');
     make(_Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"].BLUE);
   }
 
   for (var i = 0; i < grey_count; i++) {
-    console.log('Creating a Block');
     make(_Piece_js__WEBPACK_IMPORTED_MODULE_1__["default"].BLOCK);
   }
 
-  console.log('Creating a Board');
   return new _Board_js__WEBPACK_IMPORTED_MODULE_0__["default"](pieces);
 }
 
@@ -780,22 +773,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Board_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/Board.vue */ "./app/components/Board.vue");
 /* harmony import */ var _components_Paths_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Paths.vue */ "./app/components/Paths.vue");
 /* harmony import */ var _components_Path_vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/Path.vue */ "./app/components/Path.vue");
-console.log('importing');
 
 
 
 
 
-console.log('adding components');
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('tilt', _components_Tilt_vue__WEBPACK_IMPORTED_MODULE_1__["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('board', _components_Board_vue__WEBPACK_IMPORTED_MODULE_2__["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('paths', _components_Paths_vue__WEBPACK_IMPORTED_MODULE_3__["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('board-path', _components_Path_vue__WEBPACK_IMPORTED_MODULE_4__["default"]);
-console.log('making vue');
 const app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
   el: '#tilt-maker'
 });
-console.log('running');
 
 /***/ }),
 
