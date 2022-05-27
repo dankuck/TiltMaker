@@ -1,6 +1,6 @@
 import Piece from './Piece.js';
 
-const up = function (a, b) {
+const up = (a, b) => {
     if (a.y < b.y) {
         return -1;
     } else if (a.y > b.y) {
@@ -10,7 +10,7 @@ const up = function (a, b) {
     }
 };
 const down = (a, b) => -1 * up(a, b);
-const left = function (a, b) {
+const left = (a, b) => {
     if (a.x < b.x) {
         return -1;
     } else if (a.x > b.x) {
@@ -21,14 +21,6 @@ const left = function (a, b) {
 };
 const right = (a, b) => -1 * left(a, b);
 const sorts = {up, down, left, right};
-
-const empty = [
-    ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
-    ['_', '_', '_', '_', '_'],
-];
 
 /**
  * ----------------------
@@ -82,7 +74,13 @@ class Board {
      * @return Array
      */
     toGrid() {
-        const array = [...empty];
+        const array = [
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+        ];
         this.pieces.forEach(
             ({x, y, symbol}) => array[y][x] = symbol
         );
