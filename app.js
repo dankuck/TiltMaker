@@ -97,6 +97,14 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Piece_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Piece.js */ "./app/Piece.js");
 
+const {
+  BLUE,
+  GREEN
+} = _Piece_js__WEBPACK_IMPORTED_MODULE_0__["default"];
+/**
+ * These sort functions are used to sort a pieces array so the x-most pieces
+ * are first.
+ */
 
 const up = (a, b) => {
   if (a.y < b.y) {
@@ -143,19 +151,59 @@ const sorts = {
  */
 
 class Board {
-  constructor(pieces, lastDirection, lastBoard) {
-    this.pieces = pieces;
-    this.lastDirection = lastDirection;
-    this.lastBoard = lastBoard;
-    this.asString = this.toString();
+  constructor(pieces, lastDirection = null, lastBoard = null, shortestPaths = {}) {
+    this.callbacks = [];
+    this.probabilities = new Map(); // The array of pieces in this board. Immutable.
+
+    this.pieces = pieces; // The tilt direction which led to this state. Immutable.
+
+    this.lastDirection = lastDirection; // The Board that preceded this Board. Immutable.
+
+    this.lastBoard = lastBoard; // This object maps Board strings to the first instance of an
+    // equivalent Board. This is shared by all Boards in the tree. Assuming
+    // a breadth first search pattern is followed, this will contain the
+    // shortest path to any state.
+
+    this.shortestPaths = shortestPaths; // Generate the string. It's based on immutable things, so it's safe to
+    // store in a property.
+
+    this.asString = this.toString(); // Find out if this Board is just a longer-path version of some other
+    // Board. If it's not, register it as the shortest-path version.
+    // If it is a long-path version, check if it's redundant with one of
+    // its ancestors. That's interesting information.
+
+    const shorterVersion = this.shortestPaths[this.asString];
+
+    if (shorterVersion) {
+      this.isShortest = false;
+      this.isCircle = this.isRedundant();
+
+      if (!this.isCircle) {
+        // By adding the shorter version of this state to our children
+        // list (and assuming it remains the only child) we can just
+        // copy its probability to our own and we don't have to make
+        // any extra concessions to ensure our parent receives the
+        // probability updates
+        shorterVersion.onChange(board => this.updateProbabilities(board));
+        this.updateProbabilities(shorterVersion);
+      } // if it was a circle we don't want to wind up in an event loop
+
+    } else {
+      this.isShortest = true;
+      this.isCircle = false;
+      this.shortestPaths[this.asString] = this;
+    } // Any blues in The Hole?
+
+
     this.isFail = this.pieces.some(({
       symbol,
       inTheHole
-    }) => symbol == _Piece_js__WEBPACK_IMPORTED_MODULE_0__["default"].BLUE && inTheHole);
+    }) => symbol == BLUE && inTheHole); // No blues and all greens in The Hole?
+
     this.isComplete = !this.isFail && !this.pieces.some(({
       symbol,
       inTheHole
-    }) => symbol == _Piece_js__WEBPACK_IMPORTED_MODULE_0__["default"].GREEN && !inTheHole);
+    }) => symbol == GREEN && !inTheHole);
   }
   /**
    * Convert this Board into a unique string.
@@ -199,16 +247,6 @@ class Board {
     return array.map(subarray => subarray.join(" ")).join("\n");
   }
   /**
-   * Get a shallow copy of the array of pieces in this Board
-   *
-   * @return Array
-   */
-
-
-  getPiecesCopy() {
-    return this.pieces.slice();
-  }
-  /**
    * Get a shallow copy of the array of pieces in this Board, sorted so that
    * the first Piece objects are the ones that should be evaluated first
    * when considering where they would shift.
@@ -224,14 +262,14 @@ class Board {
    */
 
 
-  getSortedPiecesCopy(direction) {
+  getSortedPieces(direction) {
     const sort = sorts[direction];
 
     if (!sort) {
       throw new Error(`Unknown direction: ${direction}`);
     }
 
-    return this.getPiecesCopy().sort(sort);
+    return this.pieces.slice().sort(sort);
   }
   /**
    * Get a new instance of Board representing where the pieces would settle
@@ -243,7 +281,7 @@ class Board {
 
 
   getShiftedBoard(direction) {
-    const pieces = this.getSortedPiecesCopy(direction); // pieces starts as an array of Piece objects in original position.
+    const pieces = this.getSortedPieces(direction); // pieces starts as an array of Piece objects in original position.
     // One by one we replace a Piece with a new Piece in the location it
     // would be in if it shifted in the direction given.
     // That's why we started with the *sorted* pieces array. That ensures
@@ -251,7 +289,33 @@ class Board {
     // shift.
 
     pieces.forEach((piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction));
-    return new Board(pieces, direction, this);
+    const board = new Board(pieces, direction, this, this.shortestPaths);
+    board.onChange(board => this.updateProbabilities(board));
+    this.updateProbabilities(board);
+    return board;
+  }
+
+  onChange(cb) {
+    this.callbacks.push(cb);
+  }
+
+  fireChange() {
+    this.callbacks.forEach(cb => cb(this));
+  }
+
+  updateProbabilities(child) {
+    this.probabilities.set(child, child.getProbability());
+    this.fireChange();
+  }
+
+  getProbability() {
+    if (this.isComplete) {
+      return 1.00;
+    } else if (this.probabilities.size == 0) {
+      return 0.00;
+    } else {
+      return [...this.probabilities.values()].reduce((sum, plus) => sum + plus, 0) / this.probabilities.size;
+    }
   }
   /**
    * Is this Board identical to a Board in its ancestry?
@@ -353,7 +417,6 @@ __webpack_require__.r(__webpack_exports__);
 class BoardWalker {
   constructor(board) {
     this.active = [];
-    this.seen = {};
     this.done = false; // Unique solutions. Green pieces went in the hole.
 
     this.solutions = []; // Failures. The blue piece went in the hole.
@@ -363,7 +426,10 @@ class BoardWalker {
     this.circles = []; // Paths that joined up with some other shorter path.
     // (Not including a winning step, failure step, or circles.)
 
-    this.shortCircuited = [];
+    this.shortCircuited = []; // Keep the board's probability in a property for ease-of-use
+
+    this.probability = board.getProbability();
+    board.onChange(() => this.probability = board.getProbability());
     this.categorizeBoard(board);
   }
   /**
@@ -382,7 +448,6 @@ class BoardWalker {
     }
 
     const board = this.active.shift();
-    this.seen[board.asString] = board;
     this.getDirections(board).forEach(direction => {
       const step = board.getShiftedBoard(direction);
       this.categorizeBoard(step);
@@ -429,31 +494,17 @@ class BoardWalker {
       this.solutions.push(board); // yay!
     } else if (board.isFail) {
       this.failures.push(board); // this fails
-    } else if (board.isRedundant()) {
+    } else if (board.isCircle) {
       this.circles.push(board); // we're just going in circles
-    } else if (this.seenThisBefore(board)) {
+    } else if (!board.isShortest) {
       this.shortCircuited.push(board); // this is redundant with another, shorter path
     } else {
       this.active.push(board); // press on soldier
     }
   }
-  /**
-   * This tells us if we've already seen the board state before. If we have,
-   * we know that it's pointless to pursue this path, especially since the
-   * path we saw before was shorter.
-   *
-   * @param  Board board
-   * @return Boolean
-   */
-
-
-  seenThisBefore(board) {
-    return Boolean(this.seen[board.asString]);
-  }
 
 }
 
-;
 /* harmony default export */ __webpack_exports__["default"] = (BoardWalker);
 
 /***/ }),
@@ -1322,13 +1373,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data() {
-    console.log('generating board');
-    var board = _Maker_js__WEBPACK_IMPORTED_MODULE_0__["default"].generateRandomBoard();
-    console.log('generated board');
+    const board = _Maker_js__WEBPACK_IMPORTED_MODULE_0__["default"].generateRandomBoard();
     return {
       justStarted: true,
       startBoard: board,
@@ -1364,6 +1417,10 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return 'Searching for solutions...';
+    },
+
+    probability() {
+      return Math.round(this.walker.probability * 10000) / 100 + '%';
     }
 
   },
@@ -2100,6 +2157,10 @@ var render = function () {
       _vm.startBoard !== null
         ? _c("board", { attrs: { board: _vm.startBoard } })
         : _vm._e(),
+      _vm._v(" "),
+      _c("div", [
+        _vm._v("\n        Probability: " + _vm._s(_vm.probability) + "\n    "),
+      ]),
       _vm._v(" "),
       _c(
         "div",

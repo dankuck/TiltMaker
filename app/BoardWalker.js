@@ -30,6 +30,10 @@ class BoardWalker {
         // (Not including a winning step, failure step, or circles.)
         this.shortCircuited = [];
 
+        // Keep the board's probability in a property for ease-of-use
+        this.probability = board.getProbability();
+        board.onChange(() => this.probability = board.getProbability());
+
         this.categorizeBoard(board);
     }
 

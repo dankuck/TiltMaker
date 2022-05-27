@@ -2,8 +2,12 @@
     <div class="tilt-maker">
         <board v-if="startBoard !== null"
             :board="startBoard"
-            >
+        >
         </board>
+
+        <div>
+            Probability: {{ probability }}
+        </div>
 
         <div class="controls">
           <button @click="reset">Reset</button>
@@ -81,9 +85,7 @@ import Maker from '../Maker.js';
 import BoardWalker from '../BoardWalker.js';
 export default {
     data() {
-        console.log('generating board');
-        var board = Maker.generateRandomBoard();
-        console.log('generated board');
+        const board = Maker.generateRandomBoard();
         return {
             justStarted: true,
             startBoard: board,
@@ -114,7 +116,10 @@ export default {
                 return 'Click Run to solve this board.';
             }
             return 'Searching for solutions...';
-        }
+        },
+        probability() {
+            return (Math.round(this.walker.probability * 10000) / 100) + '%';
+        },
     },
     methods: {
         reset() {

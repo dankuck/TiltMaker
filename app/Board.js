@@ -48,6 +48,9 @@ class Board {
         lastBoard = null,
         shortestPaths = {}
     ) {
+        this.callbacks = [];
+        this.probabilities = new Map();
+
         // The array of pieces in this board. Immutable.
         this.pieces        = pieces;
 
@@ -57,10 +60,10 @@ class Board {
         // The Board that preceded this Board. Immutable.
         this.lastBoard     = lastBoard;
 
-        // The object that maps Boards to the first instance of an equivalent
-        // Board. This is shared by all Boards in the tree. Assuming a breadth
-        // first search pattern is followed, this will contain the shortest
-        // path to any state.
+        // This object maps Board strings to the first instance of an
+        // equivalent Board. This is shared by all Boards in the tree. Assuming
+        // a breadth first search pattern is followed, this will contain the
+        // shortest path to any state.
         this.shortestPaths = shortestPaths;
 
         // Generate the string. It's based on immutable things, so it's safe to
@@ -71,9 +74,19 @@ class Board {
         // Board. If it's not, register it as the shortest-path version.
         // If it is a long-path version, check if it's redundant with one of
         // its ancestors. That's interesting information.
-        if (this.shortestPaths[this.asString]) {
+        const shorterVersion = this.shortestPaths[this.asString];
+        if (shorterVersion) {
             this.isShortest = false;
             this.isCircle   = this.isRedundant();
+            if (! this.isCircle) {
+                // By adding the shorter version of this state to our children
+                // list (and assuming it remains the only child) we can just
+                // copy its probability to our own and we don't have to make
+                // any extra concessions to ensure our parent receives the
+                // probability updates
+                shorterVersion.onChange(board => this.updateProbabilities(board));
+                this.updateProbabilities(shorterVersion);
+            } // if it was a circle we don't want to wind up in an event loop
         } else {
             this.isShortest = true;
             this.isCircle   = false;
@@ -179,7 +192,34 @@ class Board {
             (piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction)
         );
         const board = new Board(pieces, direction, this, this.shortestPaths);
+        board.onChange(board => this.updateProbabilities(board));
+        this.updateProbabilities(board);
         return board;
+    }
+
+    onChange(cb) {
+        this.callbacks.push(cb);
+    }
+
+    fireChange() {
+        this.callbacks.forEach(cb => cb(this));
+    }
+
+    updateProbabilities(child) {
+        this.probabilities.set(child, child.getProbability());
+        this.fireChange();
+    }
+
+    getProbability() {
+        if (this.isComplete) {
+            return 1.00;
+        } else if (this.probabilities.size == 0) {
+            return 0.00;
+        } else {
+            return [...this.probabilities.values()]
+                .reduce((sum, plus) => sum + plus, 0)
+                / this.probabilities.size;
+        }
     }
 
     /**
