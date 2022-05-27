@@ -14,7 +14,7 @@ class BoardWalker {
 
     constructor(board) {
         this.active = [];
-        this.seen = {};
+
         this.done = false;
 
         // Unique solutions. Green pieces went in the hole.
@@ -46,7 +46,7 @@ class BoardWalker {
             return;
         }
         const board = this.active.shift();
-        this.seen[board.asString] = board;
+
         this.getDirections(board)
             .forEach(direction => {
                 const step = board.getShiftedBoard(direction);
@@ -98,26 +98,14 @@ class BoardWalker {
             this.solutions.push(board); // yay!
         } else if (board.isFail) {
             this.failures.push(board); // this fails
-        } else if (board.isRedundant()) {
+        } else if (board.isCircle) {
             this.circles.push(board); // we're just going in circles
-        } else if (this.seenThisBefore(board)) {
+        } else if (!board.isShortest) {
             this.shortCircuited.push(board); // this is redundant with another, shorter path
         } else {
             this.active.push(board); // press on soldier
         }
     }
-
-    /**
-     * This tells us if we've already seen the board state before. If we have,
-     * we know that it's pointless to pursue this path, especially since the
-     * path we saw before was shorter.
-     *
-     * @param  Board board
-     * @return Boolean
-     */
-    seenThisBefore(board) {
-        return Boolean(this.seen[board.asString]);
-    }
-};
+}
 
 export default BoardWalker;

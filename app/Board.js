@@ -1,5 +1,10 @@
 import Piece from './Piece.js';
+const { BLUE, GREEN } = Piece;
 
+/**
+ * These sort functions are used to sort a pieces array so the x-most pieces
+ * are first.
+ */
 const up = (a, b) => {
     if (a.y < b.y) {
         return -1;
@@ -37,19 +42,53 @@ const sorts = {up, down, left, right};
  */
 class Board {
 
-    constructor(pieces, lastDirection, lastBoard) {
-        this.pieces = pieces;
+    constructor(
+        pieces,
+        lastDirection = null,
+        lastBoard = null,
+        shortestPaths = {}
+    ) {
+        // The array of pieces in this board. Immutable.
+        this.pieces        = pieces;
+
+        // The tilt direction which led to this state. Immutable.
         this.lastDirection = lastDirection;
-        this.lastBoard = lastBoard;
+
+        // The Board that preceded this Board. Immutable.
+        this.lastBoard     = lastBoard;
+
+        // The object that maps Boards to the first instance of an equivalent
+        // Board. This is shared by all Boards in the tree. Assuming a breadth
+        // first search pattern is followed, this will contain the shortest
+        // path to any state.
+        this.shortestPaths = shortestPaths;
+
+        // Generate the string. It's based on immutable things, so it's safe to
+        // store in a property.
         this.asString = this.toString();
 
-        this.isFail = this.pieces
-            .some(({symbol, inTheHole}) => symbol == Piece.BLUE && inTheHole);
+        // Find out if this Board is just a longer-path version of some other
+        // Board. If it's not, register it as the shortest-path version.
+        // If it is a long-path version, check if it's redundant with one of
+        // its ancestors. That's interesting information.
+        if (this.shortestPaths[this.asString]) {
+            this.isShortest = false;
+            this.isCircle   = this.isRedundant();
+        } else {
+            this.isShortest = true;
+            this.isCircle   = false;
+            this.shortestPaths[this.asString] = this;
+        }
 
+        // Any blues in The Hole?
+        this.isFail = this.pieces
+            .some(({symbol, inTheHole}) => symbol == BLUE && inTheHole);
+
+        // No blues and all greens in The Hole?
         this.isComplete = ! this.isFail
             && ! this.pieces
                 .some(
-                    ({symbol, inTheHole}) => symbol == Piece.GREEN && !inTheHole
+                    ({symbol, inTheHole}) => symbol == GREEN && !inTheHole
                 );
     }
 
@@ -100,15 +139,6 @@ class Board {
     }
 
     /**
-     * Get a shallow copy of the array of pieces in this Board
-     *
-     * @return Array
-     */
-    getPiecesCopy() {
-        return this.pieces.slice();
-    }
-
-    /**
      * Get a shallow copy of the array of pieces in this Board, sorted so that
      * the first Piece objects are the ones that should be evaluated first
      * when considering where they would shift.
@@ -122,12 +152,12 @@ class Board {
      * @param  String direction up|down|left|right
      * @return Array
      */
-    getSortedPiecesCopy(direction) {
+    getSortedPieces(direction) {
         const sort = sorts[direction];
         if (! sort) {
             throw new Error(`Unknown direction: ${direction}`);
         }
-        return this.getPiecesCopy().sort(sort);
+        return this.pieces.slice().sort(sort);
     }
 
     /**
@@ -138,7 +168,7 @@ class Board {
      * @return Array
      */
     getShiftedBoard(direction) {
-        const pieces = this.getSortedPiecesCopy(direction);
+        const pieces = this.getSortedPieces(direction);
         // pieces starts as an array of Piece objects in original position.
         // One by one we replace a Piece with a new Piece in the location it
         // would be in if it shifted in the direction given.
@@ -148,7 +178,8 @@ class Board {
         pieces.forEach(
             (piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction)
         );
-        return new Board(pieces, direction, this);
+        const board = new Board(pieces, direction, this, this.shortestPaths);
+        return board;
     }
 
     /**
