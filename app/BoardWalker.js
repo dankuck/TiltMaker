@@ -67,28 +67,35 @@ class BoardWalker {
      * @return Array
      */
     getDirections(board) {
-        if (! board.lastDirection) {
-            // If you have no lastDirection, then this is the starting point
-            // and every direction makes sense.
-            return ['up', 'down', 'left', 'right'];
-        } else if (
-            board.lastDirection == 'up'
-            || board.lastDirection == 'down'
-        ) {
-            // If you've just gone up, it stands to reason that in another
-            // branch you went down. So we don't need to try down again.
-            return ['left', 'right'];
-        } else if (
-            board.lastDirection == 'right'
-            || board.lastDirection == 'left'
-        ) {
-            // Same as above, if you've just gone left, it stands to reason
-            // that in another branch you went right. So we don't need to try
-            // right again.
-            return ['up', 'down'];
-        } else {
-            throw new Error(`Unknown direction: ${board.lastDirection}`);
-        }
+        // To find proper probabilities I *think* we need to try every
+        // direction. The back-tracks will show up as either circles or
+        // long-way paths and so they will not do anything infinitely. But they
+        // do contribute to greater information about the probabilities from a
+        // given Board.
+        return ['up', 'down', 'left', 'right'];
+
+        // if (! board.lastDirection) {
+        //     // If you have no lastDirection, then this is the starting point
+        //     // and every direction makes sense.
+        //     return ['up', 'down', 'left', 'right'];
+        // } else if (
+        //     board.lastDirection == 'up'
+        //     || board.lastDirection == 'down'
+        // ) {
+        //     // If you've just gone up, it stands to reason that in another
+        //     // branch you went down. So we don't need to try down again.
+        //     return ['left', 'right'];
+        // } else if (
+        //     board.lastDirection == 'right'
+        //     || board.lastDirection == 'left'
+        // ) {
+        //     // Same as above, if you've just gone left, it stands to reason
+        //     // that in another branch you went right. So we don't need to try
+        //     // right again.
+        //     return ['up', 'down'];
+        // } else {
+        //     throw new Error(`Unknown direction: ${board.lastDirection}`);
+        // }
     }
 
     /**
@@ -99,15 +106,15 @@ class BoardWalker {
      */
     categorizeBoard(board) {
         if (board.isComplete) {
-            this.solutions.push(board); // yay!
+            this.solutions.push(board);      // A win!
         } else if (board.isFail) {
-            this.failures.push(board); // this fails
+            this.failures.push(board);       // A loss.
         } else if (board.isCircle) {
-            this.circles.push(board); // we're just going in circles
+            this.circles.push(board);        // A trap?
         } else if (!board.isShortest) {
-            this.shortCircuited.push(board); // this is redundant with another, shorter path
+            this.shortCircuited.push(board); // A nice long walk.
         } else {
-            this.active.push(board); // press on soldier
+            this.active.push(board);    // An opportunity for more adventure!
         }
     }
 }
