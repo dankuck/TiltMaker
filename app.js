@@ -293,28 +293,74 @@ class Board {
 
     pieces.forEach((piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction));
     const board = new Board(pieces, direction, this, this.shortestPaths);
-    board.onChange(board => this.updateProbabilities(board));
-    this.updateProbabilities(board);
-    return board;
-  }
 
-  onChange(cb) {
-    this.callbacks.push(cb);
-  }
-
-  fireChange() {
-    this.callbacks.forEach(cb => cb(this));
-  }
-
-  updateProbabilities(child) {
-    if (child.noMove) {
-      this.probabilities.delete(child);
-    } else {
-      this.probabilities.set(child, child.getProbability());
+    if (!board.noMove) {
+      board.onChange(board => this.updateProbabilities(board));
+      this.updateProbabilities(board);
     }
 
+    return board;
+  }
+  /**
+   * This registers a callback to fire whenever the mutable parts of this
+   * object are mutated. Namely when the probability undergoes update, the
+   * callback will be called with one parameter: this object.
+   *
+   * This method is careful to avoid event loops.
+   *
+   * @param  Function cb
+   * @return undefined
+   */
+
+
+  onChange(cb) {
+    // The callback most not be re-entrant. If it winds up right back here
+    // we'll detect it with `hot` and avoid an infinite loop.
+    let hot = false;
+    this.callbacks.push(() => {
+      if (!hot) {
+        hot = true;
+        cb(this);
+        hot = false;
+      }
+    });
+  }
+  /**
+   * This calls all the registered callbacks. Used internally when something
+   * changes on this object.
+   *
+   * @return undefined
+   */
+
+
+  fireChange() {
+    this.callbacks.forEach(cb => cb());
+  }
+  /**
+   * This adds the child to the probabilities map with its probability. Then
+   * it fires the onChange callbacks so interested parties can do the same
+   * thing.
+   *
+   * @param  Board child
+   * @return undefined
+   */
+
+
+  updateProbabilities(child) {
+    this.probabilities.set(child, child.getProbability());
     this.fireChange();
   }
+  /**
+   * Determine this Board's probability of reaching the goal based on
+   * the child Boards it has generated.
+   *
+   * If this Board has already reached the goal => 1.00.
+   * If this Board has no children => 0.00
+   * If this Board has children => average(children.getProbabilities())
+   *
+   * @return double
+   */
+
 
   getProbability() {
     if (this.isComplete) {
