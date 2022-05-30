@@ -76,8 +76,10 @@ class Board {
         // its ancestors. That's interesting information.
         const shorterVersion = this.shortestPaths[this.asString];
         if (shorterVersion) {
-            this.isShortest = false;
-            this.isCircle   = this.isRedundant();
+            this.isShortest  = false;
+            const redundancy = this.isRedundant();
+            this.isCircle    = Boolean(redundancy);
+            this.noMove      = redundancy === this.lastBoard;
             if (! this.isCircle) {
                 // By adding the shorter version of this state to our children
                 // list (and assuming it remains the only child) we can just
@@ -90,6 +92,7 @@ class Board {
         } else {
             this.isShortest = true;
             this.isCircle   = false;
+            this.noMove     = false;
             this.shortestPaths[this.asString] = this;
         }
 
@@ -206,7 +209,11 @@ class Board {
     }
 
     updateProbabilities(child) {
-        this.probabilities.set(child, child.getProbability());
+        if (child.noMove) {
+            this.probabilities.delete(child);
+        } else  {
+            this.probabilities.set(child, child.getProbability());
+        }
         this.fireChange();
     }
 
@@ -230,7 +237,7 @@ class Board {
         let board = this;
         while (board = board.lastBoard) {
             if (board.equals(this)) {
-                return true;
+                return board;
             }
         }
         return false;

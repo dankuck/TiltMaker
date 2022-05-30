@@ -176,7 +176,9 @@ class Board {
 
     if (shorterVersion) {
       this.isShortest = false;
-      this.isCircle = this.isRedundant();
+      const redundancy = this.isRedundant();
+      this.isCircle = Boolean(redundancy);
+      this.noMove = redundancy === this.lastBoard;
 
       if (!this.isCircle) {
         // By adding the shorter version of this state to our children
@@ -191,6 +193,7 @@ class Board {
     } else {
       this.isShortest = true;
       this.isCircle = false;
+      this.noMove = false;
       this.shortestPaths[this.asString] = this;
     } // Any blues in The Hole?
 
@@ -304,7 +307,12 @@ class Board {
   }
 
   updateProbabilities(child) {
-    this.probabilities.set(child, child.getProbability());
+    if (child.noMove) {
+      this.probabilities.delete(child);
+    } else {
+      this.probabilities.set(child, child.getProbability());
+    }
+
     this.fireChange();
   }
 
@@ -328,7 +336,7 @@ class Board {
 
     while (board = board.lastBoard) {
       if (board.equals(this)) {
-        return true;
+        return board;
       }
     }
 
@@ -469,7 +477,9 @@ class BoardWalker {
     // long-way paths and so they will not do anything infinitely. But they
     // do contribute to greater information about the probabilities from a
     // given Board.
-    return ['up', 'down', 'left', 'right']; // if (! board.lastDirection) {
+    return ['up', 'down', 'left', 'right']; // If instead we want to save time, we could avoid back-tracks.
+    //
+    // if (! board.lastDirection) {
     //     // If you have no lastDirection, then this is the starting point
     //     // and every direction makes sense.
     //     return ['up', 'down', 'left', 'right'];

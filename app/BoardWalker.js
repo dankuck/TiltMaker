@@ -74,6 +74,8 @@ class BoardWalker {
         // given Board.
         return ['up', 'down', 'left', 'right'];
 
+        // If instead we want to save time, we could avoid back-tracks.
+        //
         // if (! board.lastDirection) {
         //     // If you have no lastDirection, then this is the starting point
         //     // and every direction makes sense.
