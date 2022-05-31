@@ -28,9 +28,13 @@ export default function makeBoard(definition) {
                 if (code == '_') {
                     // empty space
                 } else if (codes[code]) {
-                    pieces.push(new Piece(codes[code], x, y));
+                    pieces.push(
+                        new Piece(codes[code], x, y, str.indexOf(HOLE) >= 0)
+                    );
                 } else {
-                    throw new Error(`Encountered unknown symbol at ${x}, ${y}: ${code}`);
+                    throw new Error(
+                        `Encountered unknown symbol at ${x}, ${y}: ${code}`
+                    );
                 }
             });
         });

@@ -99,7 +99,9 @@ __webpack_require__.r(__webpack_exports__);
 
 const {
   BLUE,
-  GREEN
+  GREEN,
+  HOLE,
+  BLOCK
 } = _Piece_js__WEBPACK_IMPORTED_MODULE_0__["default"];
 /**
  * These sort functions are used to sort a pieces array so the x-most pieces
@@ -137,6 +139,21 @@ const sorts = {
   right
 };
 /**
+ * This sort function is used to ensure immobile objects are first, which
+ * helps with efficiency and ensures The Hole is always recognized in
+ * Piece.hasConflict().
+ */
+
+const immobileFirst = (a, b) => {
+  if ((a.symbol == HOLE || a.symbol == BLOCK) && !(b.symbol == HOLE || b.symbol == BLOCK)) {
+    return -1;
+  } else if (!(a.symbol == HOLE || a.symbol == BLOCK) && (b.symbol == HOLE || b.symbol == BLOCK)) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
+/**
  * ----------------------
  * Board
  * ----------------------
@@ -149,6 +166,7 @@ const sorts = {
  * Boards can be tilted using getShiftedBoard(), which yields a new Board
  * instance in a [hopefully] different state.
  */
+
 
 class Board {
   constructor(pieces, lastDirection = null, lastBoard = null, shortestPaths = {}) {
@@ -272,7 +290,7 @@ class Board {
       throw new Error(`Unknown direction: ${direction}`);
     }
 
-    return this.pieces.slice().sort(sort);
+    return this.pieces.slice().sort((a, b) => immobileFirst(a, b) || sort(a, b));
   }
   /**
    * Get a new instance of Board representing where the pieces would settle
@@ -467,11 +485,27 @@ __webpack_require__.r(__webpack_exports__);
  * needed.
  *
  * Call the step() method repeatedly until the `done` property is true.
+ *
+ * Public properties:
+ *     root             Board   the board that started it all
+ *     done             boolean true IFF there are no more boards to play
+ *     active           Array   boards that are still being played
+ *     solutions        Array   boards that succeeded; all greens are in the
+ *                              hole
+ *     failures         Array   boards that failed; some blues went in the hole
+ *     circles          Array   boards that have the same state as some
+ *                              ancestor
+ *     shortCircuited   Array   boards that have the same state as some other
+ *                              board, but not one of its own ancestors
+ *     probability      double  the estimated probability that a random process
+ *                              will reach the goal without failing first, or
+ *                              getting caught in a trap
  */
 class BoardWalker {
   constructor(board) {
-    this.active = [];
-    this.done = false; // Unique solutions. Green pieces went in the hole.
+    this.root = board;
+    this.done = false;
+    this.active = []; // Unique solutions. Green pieces went in the hole.
 
     this.solutions = []; // Failures. The blue piece went in the hole.
 
@@ -808,6 +842,10 @@ Piece.hasConflict = function hasConflict(pieces, {
   x,
   y
 }) {
+  // We assume that the most important pieces are sorted first, so we only
+  // return the first conflict. This is why Board sorts immobile pieces to
+  // the front of its arrays; that way hasConflict() will return The Hole and
+  // not some token that is in The Hole.
   for (var i = 0; i < pieces.length; i++) {
     if (x == pieces[i].x && y == pieces[i].y) {
       return pieces[i];

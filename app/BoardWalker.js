@@ -9,13 +9,30 @@
  * needed.
  *
  * Call the step() method repeatedly until the `done` property is true.
+ *
+ * Public properties:
+ *     root             Board   the board that started it all
+ *     done             boolean true IFF there are no more boards to play
+ *     active           Array   boards that are still being played
+ *     solutions        Array   boards that succeeded; all greens are in the
+ *                              hole
+ *     failures         Array   boards that failed; some blues went in the hole
+ *     circles          Array   boards that have the same state as some
+ *                              ancestor
+ *     shortCircuited   Array   boards that have the same state as some other
+ *                              board, but not one of its own ancestors
+ *     probability      double  the estimated probability that a random process
+ *                              will reach the goal without failing first, or
+ *                              getting caught in a trap
  */
 class BoardWalker {
 
     constructor(board) {
-        this.active = [];
+        this.root = board;
 
         this.done = false;
+
+        this.active = [];
 
         // Unique solutions. Green pieces went in the hole.
         this.solutions = [];

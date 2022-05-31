@@ -131,13 +131,17 @@ class Piece {
 };
 
 Piece.hasConflict = function hasConflict(pieces, {x, y}) {
+    // We assume that the most important pieces are sorted first, so we only
+    // return the first conflict. This is why Board sorts immobile pieces to
+    // the front of its arrays; that way hasConflict() will return The Hole and
+    // not some token that is in The Hole.
     for (var i = 0; i < pieces.length; i++) {
         if (x == pieces[i].x && y == pieces[i].y) {
             return pieces[i];
         }
     }
     return null;
-}
+};
 
 Piece.BLOCK = '+';
 Piece.HOLE = 'O';

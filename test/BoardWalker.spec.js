@@ -3,8 +3,8 @@ import makeBoard from '@/test/fixtures/makeBoard.js';
 import BoardWalker from '@/app/BoardWalker.js';
 const {deepStrictEqual: equal} = assert;
 const appr = (a, b, precision) => {
-    assert(a > b - precision, `${a} < ${b} - precision`);
-    assert(a < b + precision, `${a} > ${b} + precision`);
+    assert(a > b - precision, `Failed test: ${a} > ${b} - precision`);
+    assert(a < b + precision, `Failed test: ${a} < ${b} + precision`);
 };
 
 describe('BoardWalker.js', function () {
@@ -36,7 +36,7 @@ describe('BoardWalker.js', function () {
         while (! walker.done) {
             walker.step();
         }
-        equal(1, walker.probability);
+        equal(1.00, walker.probability);
     });
 
     it('has a 50/50 probability', function () {
@@ -51,6 +51,39 @@ describe('BoardWalker.js', function () {
         while (! walker.done) {
             walker.step();
         }
-        appr(.5, walker.probability, .00000001);
+        appr(0.5, walker.probability, .0001);
     });
+
+    it('is already done', function () {
+        const walker = new BoardWalker(makeBoard([
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', 'OG','_', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+        ]));
+        while (! walker.done) {
+            walker.step();
+        }
+        equal(1, walker.solutions.length);
+        equal(0, walker.failures.length);
+        equal(0, walker.circles.length);
+        equal(0, walker.shortCircuited.length);
+        equal(1.00, walker.probability);
+    });
+
+    it('has no solution', function () {
+        const walker = new BoardWalker(makeBoard([
+            ['_', '_', '_', '+', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', 'O', '_', '_'],
+            ['_', '_', '_', '_', '_'],
+            ['_', '_', '_', '+', 'G'],
+        ]));
+        while (! walker.done) {
+            walker.step();
+        }
+        equal(0.00, walker.probability);
+    });
+
 });

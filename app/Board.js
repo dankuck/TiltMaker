@@ -1,5 +1,5 @@
 import Piece from './Piece.js';
-const { BLUE, GREEN } = Piece;
+const { BLUE, GREEN, HOLE, BLOCK } = Piece;
 
 /**
  * These sort functions are used to sort a pieces array so the x-most pieces
@@ -26,6 +26,25 @@ const left = (a, b) => {
 };
 const right = (a, b) => -1 * left(a, b);
 const sorts = {up, down, left, right};
+
+/**
+ * This sort function is used to ensure immobile objects are first, which
+ * helps with efficiency and ensures The Hole is always recognized in
+ * Piece.hasConflict().
+ */
+const immobileFirst = (a, b) => {
+    if ((a.symbol == HOLE || a.symbol == BLOCK)
+        && ! (b.symbol == HOLE || b.symbol == BLOCK))
+    {
+        return -1;
+    } else if (! (a.symbol == HOLE || a.symbol == BLOCK)
+        && (b.symbol == HOLE || b.symbol == BLOCK))
+    {
+        return 1;
+    } else {
+        return 0;
+    }
+};
 
 /**
  * ----------------------
@@ -173,7 +192,8 @@ class Board {
         if (! sort) {
             throw new Error(`Unknown direction: ${direction}`);
         }
-        return this.pieces.slice().sort(sort);
+        return this.pieces.slice()
+            .sort((a, b) => immobileFirst(a, b) || sort(a, b));
     }
 
     /**
