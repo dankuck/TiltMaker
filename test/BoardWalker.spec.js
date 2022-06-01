@@ -86,4 +86,61 @@ describe('BoardWalker.js', function () {
         equal(0.00, walker.probability);
     });
 
+    describe('published solutions', function () {
+        it('Card 1', function () {
+            const walker = new BoardWalker(makeBoard([
+                ['G', '+', '_', '_', '_'],
+                ['_', '_', '_', '_', '_'],
+                ['_', '_', 'O', '_', '_'],
+                ['_', '_', '_', '_', '_'],
+                ['_', '_', '+', '_', '_'],
+            ]));
+            while (! walker.done) {
+                walker.step();
+            }
+            const shortSolution = walker.solutions[0];
+            equal(
+                'down,right,up,right,up,left,down',
+                shortSolution.toPathString()
+            );
+
+            equal(1.00, walker.probability);
+            // This really should give probability 1.00. A human can see that
+            // every path leads eventually to success. So where is our
+            // probability leaking out?
+        });
+    });
 });
+
+function show(board, path) {
+    console.log(board.lastDirection || 'ROOT');
+    console.log('Probability:', board.getProbability());
+    console.log('Bits:', getBits(board));
+    console.log(board + '');
+
+    path.forEach(direction => {
+        board = [...board.probabilities.keys()]
+            .reduce(
+                (found, next) => found || (next.lastDirection == direction && next),
+                null
+            );
+
+        console.log(board.lastDirection || 'ROOT');
+        console.log('Probability:', board.getProbability());
+        console.log('Bits:', getBits(board));
+        console.log(board + '');
+    });
+
+    [...board.probabilities.keys()].forEach(child => {
+        console.log('= = = = = = = = = = =');
+        console.log(child.lastDirection || 'ROOT');
+        console.log('Probability:', child.getProbability());
+        console.log('Bits:', getBits(child));
+    });
+}
+
+function getBits(board)
+{
+    return Object.keys(board)
+        .filter(key => board[key] === true);
+}

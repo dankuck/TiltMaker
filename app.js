@@ -312,7 +312,7 @@ class Board {
     pieces.forEach((piece, i) => pieces[i] = piece.getShiftedPiece(pieces, direction));
     const board = new Board(pieces, direction, this, this.shortestPaths);
 
-    if (!board.noMove) {
+    if (!board.isCircle) {
       board.onChange(board => this.updateProbabilities(board));
       this.updateProbabilities(board);
     }
@@ -416,47 +416,15 @@ class Board {
   equals(other) {
     return this.asString == other.asString;
   }
-  /**
-   * This yields a human-readable string representation of the board and its
-   * ancestors. The whole path from beginning to here.
-   *
-   * This is not used in the app, but it's useful for debugging.
-   *
-   * @return String
-   */
-
 
   toPathString() {
-    return this.arrayToString(this.toPathArray());
-  }
-  /**
-   * This supports toPathString() by gathering all the ancestral data and
-   * formatting it in a way that is easy to compile to a string.
-   *
-   * @return Array
-   */
+    const directions = [];
 
-
-  toPathArray() {
-    let array = this.toGrid();
-
-    if (!this.lastDirection) {
-      return array;
+    for (let board = this; board && board.lastDirection; board = board.lastBoard) {
+      directions.push(board.lastDirection);
     }
 
-    let direction = ' ' + this.lastDirection + ' ';
-
-    for (let i = 0; i < array.length; i++) {
-      array[i].splice(0, 0, direction);
-    }
-
-    let prev = this.lastBoard.toPathArray();
-
-    for (let i = 0; i < array.length; i++) {
-      array[i] = prev[i].concat(array[i]);
-    }
-
-    return array;
+    return directions.reverse().join(',');
   }
 
 }
